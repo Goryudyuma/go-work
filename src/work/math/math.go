@@ -1,8 +1,4 @@
-package main
-
-import (
-	"fmt"
-)
+package math
 
 func sum(a []int) int {
 	s := 0
@@ -12,9 +8,4 @@ func sum(a []int) int {
 		}
 	}
 	return s
-}
-
-func main() {
-	var x = []int{2, 3, 4}
-	fmt.Println(sum(x))
 }
