@@ -31,5 +31,6 @@ func nextString() string {
 }
 
 func main() {
-	fmt.Println(nextFloat() / 3)
+	e := nextFloat()
+	fmt.Println(e * 2)
 }
