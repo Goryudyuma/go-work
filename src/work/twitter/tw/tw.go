@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"os"
 	"strings"
@@ -34,5 +35,18 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
-	api.PostTweet(strings.Join(os.Args[1:], " "), nil)
+
+	if os.Args[1][0] == '-' {
+		if os.Args[1][1:] == "c" {
+			fmt.Println("ようこそ連投モードへ！")
+			sscan := bufio.NewScanner(os.Stdin)
+			for sscan.Scan() {
+				str := sscan.Text()
+				api.PostTweet(str, nil)
+			}
+			fmt.Println("ご利用ありがとうございました！")
+		}
+	} else {
+		api.PostTweet(strings.Join(os.Args[1:], " "), nil)
+	}
 }
