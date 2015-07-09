@@ -36,17 +36,43 @@ func main() {
 		panic(err)
 	}
 
-	if os.Args[1][0] == '-' {
-		if os.Args[1][1:] == "c" {
-			fmt.Println("ようこそ連投モードへ！")
-			sscan := bufio.NewScanner(os.Stdin)
-			for sscan.Scan() {
-				str := sscan.Text()
-				api.PostTweet(str, nil)
+	begin := ""
+	end := ""
+	c := 0
+	n := 1
+	for ; n < len(os.Args); n++ {
+		if os.Args[n][0] == '-' {
+			switch os.Args[n][1:] {
+			case "c":
+				c = 1
+			case "b":
+				n++
+				if n < len(os.Args) {
+					begin = os.Args[n] + " "
+				}
+			case "e":
+				n++
+				if n < len(os.Args) {
+					end = " " + os.Args[n]
+				}
 			}
-			fmt.Println("ご利用ありがとうございました！")
+		} else {
+			break
 		}
+	}
+	if c == 1 {
+		fmt.Println("ようこそ連投モードへ！")
+		sscan := bufio.NewScanner(os.Stdin)
+		for sscan.Scan() {
+			str := sscan.Text()
+			api.PostTweet(begin+str+end, nil)
+		}
+		fmt.Println("ご利用ありがとうございました！")
 	} else {
-		api.PostTweet(strings.Join(os.Args[1:], " "), nil)
+		if n < len(os.Args) {
+			api.PostTweet(begin+strings.Join(os.Args[n:], " ")+end, nil)
+		} else {
+			fmt.Println("何か入力してください。")
+		}
 	}
 }
