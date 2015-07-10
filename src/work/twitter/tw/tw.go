@@ -2,23 +2,20 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"os"
 	"strings"
 )
 
-func main() {
-	var fp *os.File
-	var err error
-	fp, err = os.Open("/etc/pass/twi.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer fp.Close()
-
+//認証関数
+func access(fp *os.File) *anaconda.TwitterApi {
 	scanner := bufio.NewScanner(fp)
 
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
 	scanner.Scan()
 	consumer_key := scanner.Text()
 	scanner.Scan()
@@ -30,37 +27,34 @@ func main() {
 
 	anaconda.SetConsumerKey(consumer_key)
 	anaconda.SetConsumerSecret(consumer_secret)
-	api := anaconda.NewTwitterApi(accesstoken, accesstoken_secret)
+	return anaconda.NewTwitterApi(accesstoken, accesstoken_secret)
+}
 
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
+func main() {
 
-	begin := ""
-	end := ""
-	c := 0
-	n := 1
-	for ; n < len(os.Args); n++ {
-		if os.Args[n][0] == '-' {
-			switch os.Args[n][1:] {
-			case "c":
-				c = 1
-			case "b":
-				n++
-				if n < len(os.Args) {
-					begin = os.Args[n] + " "
-				}
-			case "e":
-				n++
-				if n < len(os.Args) {
-					end = " " + os.Args[n]
-				}
-			}
-		} else {
-			break
+	api_chan := make(chan *anaconda.TwitterApi)
+
+	go func() {
+		fp, err := os.Open("/etc/pass/twi.txt")
+		if err != nil {
+			panic(err)
 		}
-	}
-	if c == 1 {
+		defer fp.Close()
+
+		api_chan <- access(fp)
+	}()
+
+	//引数処理
+	var b_string = flag.String("b", "", "ツイートの最初に添加する文字列")
+	var e_string = flag.String("e", "", "ツイートの最後に添加する文字列")
+	var c = flag.Bool("c", false, "連投モードに突入")
+	flag.Parse()
+
+	begin := *b_string + " "
+	end := " " + *e_string
+
+	api := <-api_chan
+	if *c {
 		fmt.Println("ようこそ連投モードへ！")
 		sscan := bufio.NewScanner(os.Stdin)
 		for sscan.Scan() {
@@ -69,10 +63,6 @@ func main() {
 		}
 		fmt.Println("ご利用ありがとうございました！")
 	} else {
-		if n < len(os.Args) {
-			api.PostTweet(begin+strings.Join(os.Args[n:], " ")+end, nil)
-		} else {
-			fmt.Println("何か入力してください。")
-		}
+		api.PostTweet(begin+strings.Join(flag.Args(), " ")+end, nil)
 	}
 }
