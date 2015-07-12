@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
+	"math"
 	"os"
 	"strings"
+	"sync"
 )
 
 //認証関数
@@ -28,6 +30,20 @@ func access(fp *os.File) *anaconda.TwitterApi {
 	anaconda.SetConsumerKey(consumer_key)
 	anaconda.SetConsumerSecret(consumer_secret)
 	return anaconda.NewTwitterApi(accesstoken, accesstoken_secret)
+}
+
+//ツイート関数。無駄に並列化している。140字以上の分割ツイートにも対応。
+func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
+	s_len := 140 - len(begin) - len(end)
+	for str != "" {
+		limit := int(math.Min(float64(s_len), float64(len(str))))
+		waitGroup.Add(1)
+		go func(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
+			defer waitGroup.Done()
+			api.PostTweet(begin+str+end, nil)
+		}(api, waitGroup, begin, end, str[:limit])
+		str = str[limit:]
+	}
 }
 
 func main() {
@@ -53,16 +69,23 @@ func main() {
 	begin := *b_string + " "
 	end := " " + *e_string
 
+	if len(begin)+len(end) >= 140 {
+		fmt.Println("beginとendを合わせた文字列が138字未満になるようにしてください。")
+		return
+	}
 	api := <-api_chan
+
+	var waitGroup sync.WaitGroup
 	if *c {
 		fmt.Println("ようこそ連投モードへ！")
 		sscan := bufio.NewScanner(os.Stdin)
 		for sscan.Scan() {
 			str := sscan.Text()
-			api.PostTweet(begin+str+end, nil)
+			tweet(api, &waitGroup, begin, end, str)
 		}
 		fmt.Println("ご利用ありがとうございました！")
 	} else {
-		api.PostTweet(begin+strings.Join(flag.Args(), " ")+end, nil)
+		tweet(api, &waitGroup, begin, end, strings.Join(flag.Args(), " "))
 	}
+	waitGroup.Wait()
 }
