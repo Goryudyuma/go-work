@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -26,6 +27,10 @@ func main() {
 	}
 }
 
+func check_regexp(reg, str string) bool {
+	return regexp.MustCompile(reg).Match([]byte(str))
+}
+
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
@@ -37,28 +42,35 @@ func handleClient(conn net.Conn) {
 	message := string(messageBuf[:messageLen])
 	//message = strings.Trim(message, "\n")
 	//fmt.Println(message)
-	cmd := exec.Command("/root/work/cpp/dobutsu/checkState", message)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	out, err := cmd.Output()
-	if err != nil {
-		//fmt.Println(err)
-		out = []byte("error\n")
-		//os.Exit(1)
+	if check_regexp(`[^(KILHZON\+\-\.0-9\s)]`, message) {
+		out := []byte("error2\n")
+		fmt.Println("error2")
+		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		conn.Write([]byte(out))
 	} else {
-		out2 := bytes.SplitAfter(out, []byte("Move : "))
-		out3 := bytes.SplitAfter(out2[1], []byte("\n"))
-		out = out3[0]
-	}
+		cmd := exec.Command("/root/work/cpp/dobutsu/checkState", message)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
-	//fmt.Println(err)
-	//fmt.Println(out)
-	//out = strings.Trim(out, "\n")
-	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-	conn.Write([]byte(out))
+		out, err := cmd.Output()
+		if err != nil {
+			//fmt.Println(err)
+			out = []byte("error\n")
+			//os.Exit(1)
+		} else {
+			out2 := bytes.SplitAfter(out, []byte("Move : "))
+			out3 := bytes.SplitAfter(out2[1], []byte("\n"))
+			out = out3[0]
+		}
+
+		//fmt.Println(err)
+		//fmt.Println(out)
+		//out = strings.Trim(out, "\n")
+		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		conn.Write([]byte(out))
+	}
 }
 
 func checkError(err error) {
