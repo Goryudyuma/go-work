@@ -42,9 +42,9 @@ func handleClient(conn net.Conn) {
 	message := string(messageBuf[:messageLen])
 	//message = strings.Trim(message, "\n")
 	//fmt.Println(message)
-	if check_regexp(`[^(KILHZON\+\-\.0-9\s)]`, message) {
+	if check_regexp(`[^(KILHZON\+\-\.\d\s)]`, message) {
 		out := []byte("error2\n")
-		fmt.Println("error2")
+		//fmt.Println("error2")
 		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 		conn.Write([]byte(out))
 	} else {
