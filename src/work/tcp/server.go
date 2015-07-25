@@ -33,7 +33,7 @@ func check_regexp(reg, str string) bool {
 
 func handleClient(conn net.Conn) {
 	defer conn.Close()
-	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(100 * time.Second))
 	//fmt.Println("client accept!")
 	messageBuf := make([]byte, 1024)
 	messageLen, err := conn.Read(messageBuf)
@@ -46,13 +46,13 @@ func handleClient(conn net.Conn) {
 		//fmt.Println(message)
 		out := []byte("error2\n")
 		//fmt.Println("error2")
-		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		conn.SetWriteDeadline(time.Now().Add(100 * time.Second))
 		conn.Write([]byte(out))
 	} else {
 		cmd := exec.Command("/root/work/cpp/dobutsu/checkState", message)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			//fmt.Println(err)
+			//os.Exit(1)
 		}
 
 		out, err := cmd.Output()
@@ -69,7 +69,7 @@ func handleClient(conn net.Conn) {
 		//fmt.Println(err)
 		//fmt.Println(out)
 		//out = strings.Trim(out, "\n")
-		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		conn.SetWriteDeadline(time.Now().Add(100 * time.Second))
 		conn.Write([]byte(out))
 	}
 }
@@ -77,6 +77,6 @@ func handleClient(conn net.Conn) {
 func checkError(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "fatal: error: %s", err.Error())
-		os.Exit(1)
+		//os.Exit(1)
 	}
 }
