@@ -3,9 +3,7 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"net"
-	"os"
 	"os/exec"
 	"regexp"
 	"time"
@@ -76,7 +74,7 @@ func handleClient(conn net.Conn) {
 
 func checkError(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fatal: error: %s", err.Error())
+		//fmt.Fprintf(os.Stderr, "fatal: error: %s", err.Error())
 		//os.Exit(1)
 	}
 }
