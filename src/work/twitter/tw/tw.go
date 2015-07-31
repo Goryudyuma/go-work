@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"unicode/utf8"
 )
 
 //認証関数
@@ -34,15 +35,15 @@ func access(fp *os.File) *anaconda.TwitterApi {
 
 //ツイート関数。無駄に並列化している。140字以上の分割ツイートにも対応。
 func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
-	s_len := 140 - len(begin) - len(end)
+	s_len := 140 - utf8.RuneCountInString(begin) - utf8.RuneCountInString(end)
 	for str != "" {
-		limit := int(math.Min(float64(s_len), float64(len(str))))
+		limit := int(math.Min(float64(s_len), float64(utf8.RuneCountInString(str))))
 		waitGroup.Add(1)
 		go func(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
 			defer waitGroup.Done()
 			api.PostTweet(begin+str+end, nil)
-		}(api, waitGroup, begin, end, str[:limit])
-		str = str[limit:]
+		}(api, waitGroup, begin, end, string([]rune(str)[:limit]))
+		str = string([]rune(str)[limit:])
 	}
 }
 
@@ -69,7 +70,7 @@ func main() {
 	begin := *b_string + " "
 	end := " " + *e_string
 
-	if len(begin)+len(end) >= 140 {
+	if utf8.RuneCountInString(begin)+utf8.RuneCountInString(end) >= 140 {
 		fmt.Println("beginとendを合わせた文字列が138字未満になるようにしてください。")
 		return
 	}
