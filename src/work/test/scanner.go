@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+var sc = bufio.NewScanner(os.Stdin)
+
 func nextInt() int {
 	i, e := strconv.Atoi(nextString())
 	if e != nil {
@@ -24,12 +26,13 @@ func nextFloat() float64 {
 }
 
 func nextString() string {
-	var sc = bufio.NewScanner(os.Stdin)
 	sc.Split(bufio.ScanWords)
 	sc.Scan()
 	return sc.Text()
 }
 
 func main() {
+	fmt.Println(nextFloat() / 3)
+	fmt.Println(nextString())
 	fmt.Println(nextFloat() / 3)
 }
