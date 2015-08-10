@@ -17,6 +17,15 @@ func nextInt() int {
 	return i
 }
 
+func nextInt64() int64 {
+	i, e := strconv.ParseInt(nextString(), 10, 64)
+	if e != nil {
+		panic(e)
+	}
+	return i
+
+}
+
 func nextFloat() float64 {
 	f, e := strconv.ParseFloat(nextString(), 64)
 	if e != nil {
