@@ -7,6 +7,7 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 	"math"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -48,6 +49,7 @@ func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, en
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	api_chan := make(chan *anaconda.TwitterApi)
 
