@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"github.com/nsf/termbox-go"
 	"math"
 	"os"
@@ -46,9 +47,11 @@ func draw() {
 func keyEvent(fp *os.File) {
 	runes = make([][]rune, 0)
 	scanner := bufio.NewScanner(fp)
-	for scanner.Scan() {
+	for scanner.Scan() || len(runes) == 0 {
 		runes = append(runes, []rune(scanner.Text()))
 	}
+	nowline = 0
+	nowcol = 0
 	draw()
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -126,7 +129,21 @@ func Exists(filename string) bool {
 
 func main() {
 	flag.Parse()
-	var filename = flag.Args()[0]
+	var filename string
+	if len(flag.Args()) > 0 {
+		filename = flag.Args()[0]
+	} else {
+		i := 0
+		for {
+			filename = strconv.Itoa(i) + ".txt"
+			if !Exists(filename) {
+				break
+			}
+			i++
+			fmt.Println(filename)
+		}
+
+	}
 	var fp *os.File
 	var err error
 	if Exists(filename) {
