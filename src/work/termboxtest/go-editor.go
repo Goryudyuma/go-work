@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
 	"github.com/nsf/termbox-go"
 	"math"
 	"os"
@@ -12,6 +11,7 @@ import (
 
 var nowline, nowcol int
 var runes [][]rune
+var filename string
 
 func draw() {
 	linecount := 3
@@ -44,15 +44,7 @@ func draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 }
 
-func keyEvent(fp *os.File) {
-	runes = make([][]rune, 0)
-	scanner := bufio.NewScanner(fp)
-	for scanner.Scan() || len(runes) == 0 {
-		runes = append(runes, []rune(scanner.Text()))
-	}
-	nowline = 0
-	nowcol = 0
-	draw()
+func keyEvent() {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -60,6 +52,12 @@ func keyEvent(fp *os.File) {
 			case termbox.KeyEsc:
 				return
 			case termbox.KeyBackspace, termbox.KeyBackspace2:
+				{
+					if nowcol > 0 {
+						nowcol--
+						runes[nowline] = append(runes[nowline][:nowcol], runes[nowline][nowcol+1:]...)
+					}
+				}
 			case termbox.KeyEnter:
 				{
 					nowline++
@@ -122,31 +120,40 @@ func keyEvent(fp *os.File) {
 	}
 }
 
-func Exists(filename string) bool {
+func Exists() bool {
 	_, err := os.Stat(filename)
 	return err == nil
 }
 
+func construct(fp *os.File) {
+	runes = make([][]rune, 0)
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() || len(runes) == 0 {
+		runes = append(runes, []rune(scanner.Text()))
+	}
+	nowline = 0
+	nowcol = 0
+	draw()
+}
+
 func main() {
 	flag.Parse()
-	var filename string
 	if len(flag.Args()) > 0 {
 		filename = flag.Args()[0]
 	} else {
 		i := 0
 		for {
 			filename = strconv.Itoa(i) + ".txt"
-			if !Exists(filename) {
+			if !Exists() {
 				break
 			}
 			i++
-			fmt.Println(filename)
 		}
 
 	}
 	var fp *os.File
 	var err error
-	if Exists(filename) {
+	if Exists() {
 		fp, err = os.Open(filename)
 		if err != nil {
 			panic(err)
@@ -164,5 +171,6 @@ func main() {
 		panic(err)
 	}
 	defer termbox.Close()
-	keyEvent(fp)
+	construct(fp)
+	keyEvent()
 }
