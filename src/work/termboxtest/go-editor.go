@@ -43,19 +43,19 @@ func draw() {
 			j = int(math.Abs(float64(nowline - i)))
 		}
 		linerune := []rune(strconv.Itoa(j))
-		for j := range linerune {
-			termbox.SetCell(j, k, linerune[j], 0, 0)
+		for l := range linerune {
+			termbox.SetCell(l, k, linerune[l], 0, 0)
 		}
-		for j := range runes[i] {
-			if i == nowline && j == nowcol {
-				termbox.SetCell(j+linecount, k, runes[i][j], 1, termbox.Attribute(5)+1)
+		for l := 0; l < W && l+DisplayX < len(runes[i]); l++ {
+			if i == nowline && l+DisplayX == nowcol {
+				termbox.SetCell(l+linecount, k, runes[i][l+DisplayX], 1, termbox.Attribute(5)+1)
 			} else {
-				termbox.SetCell(j+linecount, k, runes[i][j], 0, 0)
+				termbox.SetCell(l+linecount, k, runes[i][l+DisplayX], 0, 0)
 			}
 		}
 	}
 	if len(runes[nowline]) <= nowcol {
-		termbox.SetCell(nowcol+linecount, nowline-DisplayY, ' ', 0, termbox.Attribute(5)+1)
+		termbox.SetCell(nowcol+linecount-DisplayX, nowline-DisplayY, ' ', 0, termbox.Attribute(5)+1)
 	}
 	termbox.Flush()
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
@@ -79,13 +79,14 @@ func keyEvent() {
 				{
 					nowline++
 					s := make([][]rune, len(runes)+1)
-					copy(s, runes[:nowline])
-					s[nowline] = make([]rune, 0)
+					copy(s, runes[:nowline-1])
+					s[nowline-1] = make([]rune, len(runes[nowline-1][:nowcol]))
+					s[nowline] = make([]rune, len(runes[nowline-1][nowcol:]))
+					copy(s[nowline-1], runes[nowline-1][:nowcol])
+					copy(s[nowline], runes[nowline-1][nowcol:])
 					copy(s[nowline+1:], runes[nowline:])
 					runes = s
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					nowcol = 0
 				}
 			case termbox.KeyArrowLeft:
 				{
