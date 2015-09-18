@@ -15,10 +15,27 @@ var filename string
 
 func draw() {
 	linecount := 3
+	W, H := termbox.Size()
+	var DisplayX, DisplayY int
+
+	if nowcol-W/2 < 0 {
+		DisplayX = 0
+	} else {
+		DisplayX = nowcol - W/2
+	}
+
+	if nowline-H/2 < 0 {
+		DisplayY = 0
+	} else {
+		DisplayY = nowline - H/2
+	}
+
 	for maxline := len(runes) - 1; maxline != 0; maxline /= 10 {
 		linecount++
 	}
-	for i := range runes {
+
+	for k := 0; k < H && DisplayY+k < len(runes); k++ {
+		i := DisplayY + k + DisplayX*0
 		j := 0
 		if i == nowline {
 			j = nowline + 1
@@ -27,18 +44,18 @@ func draw() {
 		}
 		linerune := []rune(strconv.Itoa(j))
 		for j := range linerune {
-			termbox.SetCell(j, i, linerune[j], 0, 0)
+			termbox.SetCell(j, k, linerune[j], 0, 0)
 		}
 		for j := range runes[i] {
 			if i == nowline && j == nowcol {
-				termbox.SetCell(j+linecount, i, runes[i][j], 1, termbox.Attribute(5)+1)
+				termbox.SetCell(j+linecount, k, runes[i][j], 1, termbox.Attribute(5)+1)
 			} else {
-				termbox.SetCell(j+linecount, i, runes[i][j], 0, 0)
+				termbox.SetCell(j+linecount, k, runes[i][j], 0, 0)
 			}
 		}
 	}
 	if len(runes[nowline]) <= nowcol {
-		termbox.SetCell(nowcol+linecount, nowline, ' ', 0, termbox.Attribute(5)+1)
+		termbox.SetCell(nowcol+linecount, nowline-DisplayY, ' ', 0, termbox.Attribute(5)+1)
 	}
 	termbox.Flush()
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
