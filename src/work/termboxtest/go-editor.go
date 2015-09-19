@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"github.com/nsf/termbox-go"
+	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
@@ -123,6 +124,29 @@ func keyEvent() {
 						nowcol = len(runes[nowline])
 					}
 				}
+			case termbox.KeyCtrlS:
+				{
+					if !Exists() {
+
+						i := 0
+						for {
+							filename = strconv.Itoa(i) + ".txt"
+							if !Exists() {
+								break
+							}
+							i++
+						}
+						_, err := os.Create(filename)
+						if err != nil {
+							panic(err)
+						}
+					}
+					var content []byte
+					for i := range runes {
+						content = append(content, ([]byte)(string(runes[i])+"\n")...)
+					}
+					ioutil.WriteFile(filename, content, os.ModePerm)
+				}
 			default:
 				s := make([]rune, len(runes[nowline])+1)
 				copy(s, runes[nowline][:nowcol])
@@ -158,26 +182,12 @@ func main() {
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		filename = flag.Args()[0]
-	} else {
-		i := 0
-		for {
-			filename = strconv.Itoa(i) + ".txt"
-			if !Exists() {
-				break
-			}
-			i++
-		}
-
 	}
+
 	var fp *os.File
 	var err error
 	if Exists() {
 		fp, err = os.Open(filename)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		fp, err = os.Create(filename)
 		if err != nil {
 			panic(err)
 		}
