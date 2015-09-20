@@ -13,11 +13,12 @@ import (
 var nowline, nowcol int
 var runes [][]rune
 var filename string
+var W, H int
 
 func draw() {
 	linecount := 3
-	W, H := termbox.Size()
 	var DisplayX, DisplayY int
+	W, H = termbox.Size()
 
 	if nowcol-W/2 < 0 {
 		DisplayX = 0
@@ -119,6 +120,27 @@ func keyEvent() {
 					nowline++
 					if nowline > len(runes)-1 {
 						nowline = len(runes) - 1
+					}
+					if nowcol > len(runes[nowline]) {
+						nowcol = len(runes[nowline])
+					}
+				}
+			case termbox.KeyPgdn:
+				{
+					nowline += H
+					if nowline > len(runes)-1 {
+						nowline = len(runes) - 1
+					}
+					if nowcol > len(runes[nowline]) {
+						nowcol = len(runes[nowline])
+					}
+
+				}
+			case termbox.KeyPgup:
+				{
+					nowline -= H
+					if nowline < 0 {
+						nowline = 0
 					}
 					if nowcol > len(runes[nowline]) {
 						nowcol = len(runes[nowline])
