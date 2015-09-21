@@ -63,6 +63,25 @@ func draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 }
 
+func checkNowline() {
+	if nowline < 0 {
+		nowline = 0
+	}
+	if nowline > len(runes)-1 {
+		nowline = len(runes) - 1
+	}
+	checkNowcol()
+}
+
+func checkNowcol() {
+	if nowcol > len(runes[nowline]) {
+		nowcol = len(runes[nowline])
+	}
+	if nowcol < 0 {
+		nowcol = 0
+	}
+}
+
 func keyEvent() {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -93,58 +112,33 @@ func keyEvent() {
 			case termbox.KeyArrowLeft:
 				{
 					nowcol--
-					if nowcol < 0 {
-						nowcol = 0
-					}
+					checkNowcol()
 				}
 			case termbox.KeyArrowRight:
 				{
 					nowcol++
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					checkNowcol()
 				}
 			case termbox.KeyArrowUp:
 				{
 					nowline--
-					if nowline < 0 {
-						nowline = 0
-					}
-
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					checkNowline()
 				}
 			case termbox.KeyArrowDown:
 				{
 					nowline++
-					if nowline > len(runes)-1 {
-						nowline = len(runes) - 1
-					}
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					checkNowline()
 				}
 			case termbox.KeyPgdn:
 				{
 					nowline += H
-					if nowline > len(runes)-1 {
-						nowline = len(runes) - 1
-					}
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					checkNowline()
 
 				}
 			case termbox.KeyPgup:
 				{
 					nowline -= H
-					if nowline < 0 {
-						nowline = 0
-					}
-					if nowcol > len(runes[nowline]) {
-						nowcol = len(runes[nowline])
-					}
+					checkNowline()
 				}
 			case termbox.KeyCtrlS:
 				{
