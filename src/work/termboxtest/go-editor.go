@@ -133,7 +133,6 @@ func keyEvent() {
 				{
 					nowline += H
 					checkNowline()
-
 				}
 			case termbox.KeyPgup:
 				{
