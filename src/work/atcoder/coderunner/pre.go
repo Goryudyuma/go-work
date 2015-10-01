@@ -1,34 +1,55 @@
 package main
 
 import (
-	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 )
+
+var maxpoint int
+var memo string
 
 func strreplace(input string, n int, char string) (ret string) {
 	ret = input[:n] + char + input[n+1:]
 	return
 }
 
-func point(S string) {
+func point(S string, c redis.Conn) {
 	response, _ := http.Get("http://sample.coderunner.jp/q?token=hntVKIWFwqAvchh2SY4NsKPyRSs4rAuM&str=" + S)
 	body, _ := ioutil.ReadAll(response.Body)
 	defer response.Body.Close()
 
-	fmt.Println(string(body))
+	//fmt.Println(string(body))
+	x, _ := strconv.Atoi(string(body))
+	c.Do("SET", S, x)
+	if x > maxpoint {
+		maxpoint = x
+		memo = S
+		ioutil.WriteFile("result.txt", []byte(memo+"\n"+strconv.Itoa(maxpoint)+"\n"), os.ModePerm)
+	}
 }
+
 func main() {
-	N := 4
+	N := 8
+	maxpoint = 0
 	var S, end string
 	for i := 0; i < N; i++ {
 		S = S + "A"
 		end = end + "D"
 	}
 	now := N - 1
-	fmt.Println(S)
-	point(S)
+	//fmt.Println(S)
+	c, err := redis.Dial("tcp", ":6379")
+	if err != nil {
+		panic(err)
+	}
+	defer c.Close()
+
+	c.Do("SELECT", "1")
+	point(S, c)
 	time.Sleep(1000000000)
 	for S != end {
 		switch S[now] {
@@ -54,9 +75,9 @@ func main() {
 				continue
 			}
 		}
-		fmt.Println(S)
+		//fmt.Println(S)
 
-		point(S)
+		point(S, c)
 		time.Sleep(1000000000)
 	}
 }
