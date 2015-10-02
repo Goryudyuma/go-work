@@ -33,51 +33,52 @@ func point(S string, c redis.Conn) {
 }
 
 func main() {
-	N := 8
-	maxpoint = 0
-	var S, end string
-	for i := 0; i < N; i++ {
-		S = S + "A"
-		end = end + "D"
-	}
-	now := N - 1
-	//fmt.Println(S)
 	c, err := redis.Dial("tcp", ":6379")
 	if err != nil {
 		panic(err)
 	}
 	defer c.Close()
-
-	c.Do("SELECT", "1")
-	point(S, c)
-	time.Sleep(1000000000)
-	for S != end {
-		switch S[now] {
-		case 'A':
-			{
-				S = S[:now] + "B" + S[now+1:]
-				now = N - 1
-			}
-		case 'B':
-			{
-				S = S[:now] + "C" + S[now+1:]
-				now = N - 1
-			}
-		case 'C':
-			{
-				S = S[:now] + "D" + S[now+1:]
-				now = N - 1
-			}
-		case 'D':
-			{
-				S = S[:now] + "A" + S[now+1:]
-				now--
-				continue
-			}
+	for N := 1; N < 8; N++ {
+		maxpoint = 0
+		var S, end string
+		for i := 0; i < N; i++ {
+			S = S + "A"
+			end = end + "D"
 		}
+		now := N - 1
 		//fmt.Println(S)
 
+		c.Do("SELECT", "1")
 		point(S, c)
 		time.Sleep(1000000000)
+		for S != end {
+			switch S[now] {
+			case 'A':
+				{
+					S = S[:now] + "B" + S[now+1:]
+					now = N - 1
+				}
+			case 'B':
+				{
+					S = S[:now] + "C" + S[now+1:]
+					now = N - 1
+				}
+			case 'C':
+				{
+					S = S[:now] + "D" + S[now+1:]
+					now = N - 1
+				}
+			case 'D':
+				{
+					S = S[:now] + "A" + S[now+1:]
+					now--
+					continue
+				}
+			}
+			//fmt.Println(S)
+
+			point(S, c)
+			time.Sleep(1000000000)
+		}
 	}
 }
