@@ -13,6 +13,9 @@ import (
 	"unicode/utf8"
 )
 
+//reverseフラグ
+var r *bool
+
 //認証関数
 func access(fp *os.File) *anaconda.TwitterApi {
 	scanner := bufio.NewScanner(fp)
@@ -34,6 +37,14 @@ func access(fp *os.File) *anaconda.TwitterApi {
 	return anaconda.NewTwitterApi(accesstoken, accesstoken_secret)
 }
 
+func reverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
+
 //ツイート関数。無駄に並列化している。140字以上の分割ツイートにも対応。
 func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
 	s_len := 140 - utf8.RuneCountInString(begin) - utf8.RuneCountInString(end)
@@ -42,7 +53,11 @@ func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, en
 		waitGroup.Add(1)
 		go func(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
 			defer waitGroup.Done()
-			api.PostTweet(begin+str+end, nil)
+			if *r {
+				api.PostTweet(reverse(begin+str+end), nil)
+			} else {
+				api.PostTweet(begin+str+end, nil)
+			}
 		}(api, waitGroup, begin, end, string([]rune(str)[:limit]))
 		str = string([]rune(str)[limit:])
 	}
@@ -67,6 +82,7 @@ func main() {
 	var b_string = flag.String("b", "", "ツイートの最初に添加する文字列")
 	var e_string = flag.String("e", "", "ツイートの最後に添加する文字列")
 	var c = flag.Bool("c", false, "連投モードに突入")
+	r = flag.Bool("r", false, "リバースモードに突入")
 	flag.Parse()
 
 	begin := *b_string + " "

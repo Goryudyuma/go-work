@@ -34,9 +34,9 @@ func main() {
 		end = end + "D"
 	}
 	now := N - 1
-	SI := make(map[string]int, 0)
 
 	c.Do("SELECT", "1")
+	a := List{}
 	for S != end {
 		switch S[now] {
 		case 'A':
@@ -63,14 +63,18 @@ func main() {
 		}
 		//fmt.Println(S)
 
-		SI[S] = get(S, c)
+		//SI[S] = get(S, c)
+
+		a = append(a, Entry{S, get(S, c)})
 	}
 
-	a := List{}
-	for k, v := range SI {
-		e := Entry{k, v}
-		a = append(a, e)
-	}
+	/*	for k, v := range SI {
+			e := Entry{k, v}
+			a = append(a, e)
+		}
+	*/
+
+	fmt.Println("!")
 
 	sort.Sort(a)
 	fmt.Println(a)
