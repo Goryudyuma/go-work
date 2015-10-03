@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
@@ -13,8 +15,8 @@ import (
 	"unicode/utf8"
 )
 
-//reverseフラグ
-var r *bool
+//globalフラグ
+var r, h *bool
 
 //認証関数
 func access(fp *os.File) *anaconda.TwitterApi {
@@ -51,13 +53,18 @@ func tweet(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, en
 	for str != "" {
 		limit := int(math.Min(float64(s_len), float64(utf8.RuneCountInString(str))))
 		waitGroup.Add(1)
-		go func(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin string, end string, str string) {
+		go func(api *anaconda.TwitterApi, waitGroup *sync.WaitGroup, begin, end, str string) {
 			defer waitGroup.Done()
+			tweetstr := begin + str + end
 			if *r {
-				api.PostTweet(reverse(begin+str+end), nil)
-			} else {
-				api.PostTweet(begin+str+end, nil)
+				tweetstr = reverse(tweetstr)
 			}
+			if *h {
+				hash := sha256.Sum256([]byte(tweetstr))
+				tweetstr = hex.EncodeToString(hash[:])
+			}
+
+			api.PostTweet(tweetstr, nil)
 		}(api, waitGroup, begin, end, string([]rune(str)[:limit]))
 		str = string([]rune(str)[limit:])
 	}
@@ -83,6 +90,7 @@ func main() {
 	var e_string = flag.String("e", "", "ツイートの最後に添加する文字列")
 	var c = flag.Bool("c", false, "連投モードに突入")
 	r = flag.Bool("r", false, "リバースモードに突入")
+	h = flag.Bool("h", false, "ハッシュモードに突入")
 	flag.Parse()
 
 	begin := *b_string + " "
