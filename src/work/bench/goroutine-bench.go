@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cpus := runtime.NumCPU()
-	runtime.GOMAXPROCS(cpus)
+	//	runtime.GOMAXPROCS(cpus)
 	count := 1000 * 100
 
 	var startMemory runtime.MemStats
