@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/garyburd/redigo/redis"
 	"net/url"
@@ -34,7 +35,7 @@ func main() {
 	scanner.Scan()
 	accesstoken_secret := scanner.Text()
 	api := anaconda.NewTwitterApi(accesstoken, accesstoken_secret)
-	//api.SetLogger(anaconda.BasicLogger) // logger を設定
+	api.SetLogger(anaconda.BasicLogger) // logger を設定
 
 	v := url.Values{}
 	stream := api.UserStream(v) // 接続
@@ -47,9 +48,12 @@ func main() {
 			case anaconda.Tweet:
 				// Tweet を受信
 				//fmt.Printf("%s: %s\n", status.User.ScreenName, status.Text)
-				c.Do("LPUSH", status.User.ScreenName, status)
-				c.Do("LTRIM", status.User.ScreenName, "1000")
+			//c.Do("LPUSH", status.User.ScreenName, status)
+			//c.Do("LTRIM", status.User.ScreenName, "0", "999")
+			case anaconda.DirectMessage:
+				fmt.Println(status)
 			default:
+				fmt.Println(status)
 			}
 		}
 	}
