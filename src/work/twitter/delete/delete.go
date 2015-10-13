@@ -58,17 +58,17 @@ func main() {
 					obj := new(anaconda.Tweet)
 					dec := json.NewDecoder(strings.NewReader(val))
 					dec.Decode(&obj)
-					c.Do("LPUSH", obj.User.ScreenName, val)
-					c.Do("LTRIM", obj.User.ScreenName, "0", "999")
-					c.Do("LPUSH", "ALL", val)
-					c.Do("LTRIM", "ALL", "0", "999")
+					c.Do("LPUSH", strings.ToLower(obj.User.ScreenName), val)
+					c.Do("LTRIM", strings.ToLower(obj.User.ScreenName), "0", "999")
+					c.Do("LPUSH", "all", val)
+					c.Do("LTRIM", "all", "0", "999")
 					c.Do("DEL", status.IdStr)
 				}
 			case anaconda.DirectMessage:
 				if status.SenderId == 119667108 {
 					classification := strings.Fields(status.Text)
 					if classification[0] == "del" {
-						val, err := redis.String(c.Do("LINDEX", classification[1], classification[2]))
+						val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), classification[2]))
 						if err == nil {
 							api.PostDMToUserId(val+"\n"+status.Text, 119667108)
 						} else {
