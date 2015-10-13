@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/garyburd/redigo/redis"
 	"net/url"
@@ -46,21 +45,34 @@ func main() {
 		select {
 		case item := <-stream.C:
 			switch status := item.(type) {
-			case anaconda.Tweet:
-				b, err := json.Marshal(status)
-				if err != nil {
-					continue
-				}
-				c.Do("SETEX", status.Id, 86400, b)
-			case anaconda.StatusDeletionNotice:
-				val, err := redis.String(c.Do("GET", status.IdStr))
-				if err == nil {
-					obj := new(anaconda.Tweet)
-					dec := json.NewDecoder(strings.NewReader(val))
-					dec.Decode(&obj)
-					c.Do("LPUSH", obj.User.ScreenName, val)
-					c.Do("LTRIM", obj.User, "0", "999")
-					c.Do("DEL", status.IdStr)
+			/*	case anaconda.Tweet:
+					b, err := json.Marshal(status)
+					if err != nil {
+						continue
+					}
+					c.Do("SETEX", status.Id, 86400, b)
+				case anaconda.StatusDeletionNotice:
+					val, err := redis.String(c.Do("GET", status.IdStr))
+					if err == nil {
+						obj := new(anaconda.Tweet)
+						dec := json.NewDecoder(strings.NewReader(val))
+						dec.Decode(&obj)
+						c.Do("LPUSH", obj.User.ScreenName, val)
+						c.Do("LTRIM", obj.User, "0", "999")
+						c.Do("DEL", status.IdStr)
+					}
+			*/
+			case anaconda.DirectMessage:
+				if status.SenderId == 119667108 {
+					classification := strings.Fields(status.Text)
+					if classification[0] == "del" {
+						val, err := redis.String(c.Do("LINDEX", classification[1], classification[2]))
+						if err == nil {
+							api.PostDMToUserId(val+"\n"+status.Text, 119667108)
+						} else {
+							api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+						}
+					}
 				}
 			default:
 				//fmt.Println(status)
