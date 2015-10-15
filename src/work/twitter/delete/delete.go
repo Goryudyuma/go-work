@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/garyburd/redigo/redis"
@@ -67,12 +68,17 @@ func main() {
 			case anaconda.DirectMessage:
 				if status.SenderId == 119667108 {
 					classification := strings.Fields(status.Text)
-					if classification[0] == "del" {
-						val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), classification[2]))
-						if err == nil {
-							api.PostDMToUserId(val+"\n"+status.Text, 119667108)
-						} else {
-							api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+					switch classification[0] {
+					case "del":
+						{
+							val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), classification[2]))
+							if err == nil {
+								var out bytes.Buffer
+								json.Indent(&out, []byte(val), "", "__")
+								api.PostDMToUserId(out.String()+"\n"+status.Text, 119667108)
+							} else {
+								api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+							}
 						}
 					}
 				}
