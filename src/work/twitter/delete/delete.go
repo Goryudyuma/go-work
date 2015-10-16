@@ -8,6 +8,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -71,13 +72,37 @@ func main() {
 					switch classification[0] {
 					case "del":
 						{
-							val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), classification[2]))
-							if err == nil {
-								var out bytes.Buffer
-								json.Indent(&out, []byte(val), "", "__")
-								api.PostDMToUserId(out.String()+"\n"+status.Text, 119667108)
-							} else {
-								api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+							switch len(classification) {
+							case 3:
+								{
+									val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), classification[2]))
+									if err == nil {
+										var out bytes.Buffer
+										json.Indent(&out, []byte(val), "", "__")
+										api.PostDMToUserId(out.String()+"\n"+status.Text, 119667108)
+									} else {
+										api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+									}
+								}
+							case 4:
+								{
+									b, be := strconv.Atoi(classification[2])
+									e, ee := strconv.Atoi(classification[3])
+									if be == nil && ee == nil {
+										for i := b; i < e; i++ {
+											val, err := redis.String(c.Do("LINDEX", strings.ToLower(classification[1]), i))
+											if err == nil {
+												var out bytes.Buffer
+												json.Indent(&out, []byte(val), "", "__")
+												api.PostDMToUserId(out.String()+"\n"+status.Text+" No."+strconv.Itoa(i), 119667108)
+											} else {
+												break
+											}
+										}
+									} else {
+										api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+									}
+								}
 							}
 						}
 					}
