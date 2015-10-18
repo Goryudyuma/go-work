@@ -12,6 +12,10 @@ import (
 	"strings"
 )
 
+func DMTweet(str string, api *anaconda.TwitterApi) {
+	api.PostDMToUserId(str, 119667108)
+}
+
 func main() {
 	fp, err := os.Open("/etc/pass/twi.txt")
 	if err != nil {
@@ -79,9 +83,9 @@ func main() {
 									if err == nil {
 										var out bytes.Buffer
 										json.Indent(&out, []byte(val), "", "__")
-										api.PostDMToUserId(out.String()+"\n"+status.Text, 119667108)
+										go DMTweet(out.String()+"\n"+status.Text, api)
 									} else {
-										api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+										go DMTweet("Nothing."+"\n"+status.Text, api)
 									}
 								}
 							case 4:
@@ -94,16 +98,20 @@ func main() {
 											if err == nil {
 												var out bytes.Buffer
 												json.Indent(&out, []byte(val), "", "__")
-												api.PostDMToUserId(out.String()+"\n"+status.Text+" No."+strconv.Itoa(i), 119667108)
+												go DMTweet(out.String()+"\n"+status.Text+" No."+strconv.Itoa(i), api)
 											} else {
 												break
 											}
 										}
 									} else {
-										api.PostDMToUserId("Nothing."+"\n"+status.Text, 119667108)
+										go DMTweet("Nothing."+"\n"+status.Text, api)
 									}
 								}
 							}
+						}
+					case "count":
+						{
+
 						}
 					}
 				}
