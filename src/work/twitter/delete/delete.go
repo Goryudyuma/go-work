@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/garyburd/redigo/redis"
 	"net/url"
@@ -129,9 +128,6 @@ func main() {
 							} else {
 								go DMTweet("err\n"+status.Text, api)
 							}
-							fmt.Println("??")
-							fmt.Println(string(num) + "\n" + status.Text)
-							fmt.Println(err)
 						}
 					}
 				}
