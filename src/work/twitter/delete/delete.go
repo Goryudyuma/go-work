@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/garyburd/redigo/redis"
 	"net/url"
@@ -110,8 +111,27 @@ func main() {
 							}
 						}
 					case "count":
+						fallthrough
+					case "size":
 						{
-
+							var num int64
+							var err error
+							switch len(classification) {
+							case 1:
+								{
+									num, err = redis.Int64(c.Do("DBSIZE"))
+								}
+							case 2:
+								num, err = redis.Int64(c.Do("LLEN", strings.ToLower(classification[1])))
+							}
+							if err == nil {
+								go DMTweet(strconv.FormatInt(num, 10)+"\n"+status.Text, api)
+							} else {
+								go DMTweet("err\n"+status.Text, api)
+							}
+							fmt.Println("??")
+							fmt.Println(string(num) + "\n" + status.Text)
+							fmt.Println(err)
 						}
 					}
 				}
