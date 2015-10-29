@@ -1,4 +1,4 @@
-//どこかでミスってる
+//30点解法
 
 package main
 
@@ -105,7 +105,7 @@ func main() {
 			} else {
 				item := &Item{
 					value:    []int{i, j},
-					priority: 1,
+					priority: 0,
 				}
 				heap.Push(&Wpq, item)
 			}
@@ -117,45 +117,52 @@ func main() {
 			} else {
 				item := &Item{
 					value:    []int{i, j},
-					priority: 1,
+					priority: 0,
 				}
 				heap.Push(&Hpq, item)
 			}
 		}
 	}
+	tmax := 0
 	for i := 0; i < Q; i++ {
 		T, D, X := nextInt(), nextInt(), nextInt()
 		if D == 0 {
 			Wboard[T][X-1] = -1
+			if tmax < T {
+				tmax = T
+			}
 		} else {
 			Hboard[T][X-1] = -1
+			if tmax < T {
+				tmax = T
+			}
 		}
 	}
-	dy := []int{0, 1, 1, 1, 0}
-	dx := []int{1, 1, 0, -1, -1}
+	dy := []int{0, 1, 0}
 	Wans := -1
 	for Wpq.Len() > 0 {
 		item := heap.Pop(&Wpq).(*Item)
 		nowy := item.value[0]
-		if nowy == 1e5 {
+		if nowy == tmax {
 			Wans = item.priority
+			break
 		}
 		nowx := item.value[1]
-		for k := 0; k < 5; k++ {
+		for k := 0; k < 3; k++ {
 			nexty := nowy + dy[k]
-			nextx := nowx + dy[k]
-			nextcost := item.priority
-			if dx[k] != 0 {
-				nextcost++
-			}
-			if nextx < W && nextx >= 0 && nexty < 1e5+2 {
-				if Wboard[nexty][nextx] > int64(nextcost) {
-					Wboard[nexty][nextx] = int64(nextcost)
-					itempush := &Item{
-						value:    []int{nexty, nextx},
-						priority: nextcost,
+			for l := 0; l < W; l++ {
+				nextx := l
+				nextcost := int(Wboard[nowy][nowx])
+				nextcost += int(math.Abs(float64(nextx - nowx)))
+				if nextx < W && nextx >= 0 && nexty <= tmax {
+					if Wboard[nexty][nextx] > int64(nextcost) {
+						Wboard[nexty][nextx] = int64(nextcost)
+						itempush := &Item{
+							value:    []int{nexty, nextx},
+							priority: nextcost,
+						}
+						heap.Push(&Wpq, itempush)
 					}
-					heap.Push(&Wpq, itempush)
 				}
 			}
 		}
@@ -168,25 +175,26 @@ func main() {
 	for Hpq.Len() > 0 {
 		item := heap.Pop(&Hpq).(*Item)
 		nowy := item.value[0]
-		if nowy == 1e5 {
+		if nowy == tmax {
 			Hans = item.priority
+			break
 		}
 		nowx := item.value[1]
-		for k := 0; k < 5; k++ {
+		for k := 0; k < 3; k++ {
 			nexty := nowy + dy[k]
-			nextx := nowx + dy[k]
-			nextcost := item.priority
-			if dx[k] != 0 {
-				nextcost++
-			}
-			if nextx < H && nextx >= 0 && nexty < 1e5+2 {
-				if Hboard[nexty][nextx] > int64(nextcost) {
-					Hboard[nexty][nextx] = int64(nextcost)
-					itempush := &Item{
-						value:    []int{nexty, nextx},
-						priority: nextcost,
+			for l := 0; l < H; l++ {
+				nextx := l
+				nextcost := item.priority
+				nextcost += int(math.Abs(float64(nextx - nowx)))
+				if nextx < H && nextx >= 0 && nexty <= tmax {
+					if Hboard[nexty][nextx] > int64(nextcost) {
+						Hboard[nexty][nextx] = int64(nextcost)
+						itempush := &Item{
+							value:    []int{nexty, nextx},
+							priority: nextcost,
+						}
+						heap.Push(&Hpq, itempush)
 					}
-					heap.Push(&Hpq, itempush)
 				}
 			}
 		}
