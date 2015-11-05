@@ -1,0 +1,11 @@
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	var A int
+	fmt.Scan(&A)
+	fmt.Println(A / 2 * (A - A/2))
+}
