@@ -83,13 +83,13 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 
 func main() {
 	var s http.Server
-	s.Addr = ":8080"
+	s.Addr = ":12346"
 	http2.ConfigureServer(&s, &http2.Server{})
 
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
 
-	s.ListenAndServeTLS("key/server.crt", "key/server.key")
+	s.ListenAndServeTLS("../key/server.crt", "../key/server.key")
 	//	http.ListenAndServe(":8080", nil)
 }
