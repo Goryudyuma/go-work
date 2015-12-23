@@ -57,7 +57,7 @@ func main() {
 				if err != nil {
 					continue
 				}
-				c.Do("SETEX", status.Id, 86400, b)
+				c.Do("SETEX", status.Id, 7200, b)
 			case anaconda.StatusDeletionNotice:
 				val, err := redis.String(c.Do("GET", status.IdStr))
 				if err == nil {
