@@ -5,10 +5,8 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 	"os"
 	"runtime"
+	"time"
 )
-
-//globalフラグ
-var r, h *bool
 
 //認証関数
 func access(fp *os.File) *anaconda.TwitterApi {
@@ -46,7 +44,9 @@ func main() {
 		apiChan <- access(fp)
 	}()
 
+	time.Sleep(57539 * time.Millisecond)
+
 	api := <-apiChan
 
-	api.Retweet(684185068345016320, true)
+	api.Retweet(685272211985268736, true)
 }
