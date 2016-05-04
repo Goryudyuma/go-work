@@ -52,7 +52,16 @@ func draw() {
 			if i == nowline && l+DisplayX == nowcol {
 				termbox.SetCell(l+linecount, k, runes[i][l+DisplayX], 1, termbox.Attribute(5)+1)
 			} else {
-				termbox.SetCell(l+linecount, k, runes[i][l+DisplayX], 0, 0)
+				if l+DisplayX+1 < len(runes[i]) && runes[i][l+DisplayX] == 'd' && runes[i][l+DisplayX+1] == 'o' {
+					termbox.SetCell(l+linecount, k, rune('{'), 0, 0)
+					l++
+				} else if l+DisplayX+2 < len(runes[i]) && runes[i][l+DisplayX] == 'e' && runes[i][l+DisplayX+1] == 'n' && runes[i][l+DisplayX+2] == 'd' {
+					termbox.SetCell(l+linecount, k, rune('}'), 0, 0)
+					l++
+					l++
+				} else {
+					termbox.SetCell(l+linecount, k, runes[i][l+DisplayX], 0, 0)
+				}
 			}
 		}
 	}
